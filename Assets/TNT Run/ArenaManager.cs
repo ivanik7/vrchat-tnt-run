@@ -7,14 +7,13 @@ using VRC.Udon;
 public class ArenaManager : UdonSharpBehaviour
 {
     VRCPlayerApi localPlayer;
+    public PlayerState localPlayerState;
 
     public ArenaPlane[] arenaPlanes;
     float[] layersHeight;
 
     CircularBufferVector3Int buffer;
 
-    [UdonSynced] Vector3[] networkBufer;
-    [UdonSynced] int networkBuferPtr = 0;
 
     readonly Vector2[] playerBoundaries = new Vector2[] {
         new Vector2(-1f, -1f),
@@ -37,7 +36,6 @@ public class ArenaManager : UdonSharpBehaviour
             layersHeight[i] = arenaPlanes[i].transform.position.y;
         }
 
-        networkBufer = new Vector3[32];
 
         localPlayer = Networking.LocalPlayer;
     }
@@ -94,15 +92,15 @@ public class ArenaManager : UdonSharpBehaviour
                 var pos = buffer.Peek();
                 var isDeleted = ProcessBlock(arenaPlanes[pos.y], new Vector2Int(pos.x, pos.z));
                 Debug.Log(isDeleted);
-                if (isDeleted && networkBuferPtr < networkBufer.Length)
+                if (isDeleted )
                 {
-                    networkBufer[networkBuferPtr++] = pos;
+                    // Add
+                    localPlayerState.Add(pos);
                 }
             }
 
-            if (networkBuferPtr > 0) {
-                RequestSerialization();
-            }
+            // Send
+            localPlayerState.SendIfNotEmpty();
         }
     }
 
@@ -111,17 +109,8 @@ public class ArenaManager : UdonSharpBehaviour
         // TODO: Анимация падения блока
         return plane.RemoveBlock(pos);
     }
-    
-    public override void OnPostSerialization (VRC.Udon.Common.SerializationResult result) {
-        if (!result.success) {
-            Debug.Log("voobshe pizdec");
-        }
 
-        networkBufer = new Vector3[32];
-        networkBuferPtr = 0;
-    }
-
-    public override void OnDeserialization () {
+    public void ApplyNetworkData(Vector3[] networkBufer, int networkBuferPtr) {
         for (int i = 0; i < networkBuferPtr; i++)
         {
             ProcessBlock(arenaPlanes[(int)networkBufer[i].y], new Vector2Int((int)networkBufer[i].x, (int)networkBufer[i].z));
