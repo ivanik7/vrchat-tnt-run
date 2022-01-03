@@ -15,9 +15,11 @@ public class StartGame : UdonSharpBehaviour
         var players = new VRCPlayerApi[VRCPlayerApi.GetPlayerCount()];
         VRCPlayerApi.GetPlayers(players);
 
-        foreach (var player in players)
-        {
-            player.TeleportTo(arenaSpawn.position, arenaSpawn.rotation);
-        }
+        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "Teleport");
+    }
+
+    public void Teleport () {
+        Debug.Log("teleport");
+        Networking.LocalPlayer.TeleportTo(arenaSpawn.position, arenaSpawn.rotation);
     }
 }

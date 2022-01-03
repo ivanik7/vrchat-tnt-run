@@ -38,12 +38,12 @@ public class ArenaManager : UdonSharpBehaviour
 
 
         localPlayer = Networking.LocalPlayer;
+        Debug.Log("localPlayer");
     }
 
     public void PrepareGame()
     {
         SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "ProcessPrepareGame");
-
     }
 
     public void ProcessPrepareGame()
@@ -61,7 +61,7 @@ public class ArenaManager : UdonSharpBehaviour
     {
         if (gameStarted)
         {
-            if (localPlayer.IsPlayerGrounded())
+            if (localPlayer != null && localPlayer.IsPlayerGrounded())
             {
                 var pos = transform.InverseTransformPoint(localPlayer.GetPosition());
 

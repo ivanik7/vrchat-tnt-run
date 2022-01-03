@@ -106,7 +106,7 @@ public class ArenaPlane : UdonSharpBehaviour
         int x = pos.x;
         int y = pos.y;
         
-        if (x > width || y > heght || !map[x * heght + y]) {
+        if (x < 0 || x > width || y < 0 || y > heght || !map[x * heght + y]) {
             return false;
         }
 
