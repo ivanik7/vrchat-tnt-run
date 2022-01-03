@@ -9,12 +9,12 @@ public class ArenaPlane : UdonSharpBehaviour
 
         new Vector3(0.0f, 0.0f, 0.0f),
         new Vector3(1.0f, 0.0f, 0.0f),
-        new Vector3(1.0f, 2.0f, 0.0f),
-        new Vector3(0.0f, 2.0f, 0.0f),
+        new Vector3(1.0f, 1.0f, 0.0f),
+        new Vector3(0.0f, 1.0f, 0.0f),
         new Vector3(0.0f, 0.0f, 1.0f),
         new Vector3(1.0f, 0.0f, 1.0f),
-        new Vector3(1.0f, 2.0f, 1.0f),
-        new Vector3(0.0f, 2.0f, 1.0f),
+        new Vector3(1.0f, 1.0f, 1.0f),
+        new Vector3(0.0f, 1.0f, 1.0f),
     };
 
     readonly int[] voxelTris = new int[] {
@@ -28,13 +28,11 @@ public class ArenaPlane : UdonSharpBehaviour
 	};
 
     readonly Vector2[] voxelUvs = new Vector2[] {
-
         new Vector2 (0.0f, 0.0f),
-        new Vector2 (0.0f, 1.0f),
-        new Vector2 (1.0f, 0.0f),
-        new Vector2 (1.0f, 1.0f)
+        new Vector2 (0.0f, 0.25f),
+        new Vector2 (0.25f, 0.0f),
+        new Vector2 (0.25f, 0.25f)
     };
-
 
     public int width = 28;
     public int heght = 100;
@@ -47,6 +45,9 @@ public class ArenaPlane : UdonSharpBehaviour
 
     Vector3[] verticesCollision;
     int[] trianglesCollision;
+
+    int[] offsets;
+    int[] offsetsCollsison;
     
     Mesh mesh;
     Mesh collisionMesh;
@@ -105,27 +106,26 @@ public class ArenaPlane : UdonSharpBehaviour
         int x = pos.x;
         int y = pos.y;
         
-        if (!map[x * heght + y]) {
-            Debug.Log($"Block alredy removed");
-            
+        if (x > width || y > heght || !map[x * heght + y]) {
             return false;
         }
 
         map[x * heght + y] = false;
 
+        int offset = offsets[x * heght + y];
         for (int i = 0; i < 36; i++)
         {
-            triangles[(x * heght + y) * 36 + i] = 0;
+            triangles[offset * 36 + i] = 0;
         }
 
         for (int i = 0; i < 6; i++)
         {
-            trianglesCollision[(x * heght + y) * 6 + i] = 0;
+            trianglesCollision[offset * 6 + i] = 0;
         }
 
         needMeshUpdate = true;
 
-        Debug.Log($"Remove block");
+        Debug.Log($"Remove block {pos.x} {pos.y}");
 
         return true;
     }
@@ -141,12 +141,15 @@ public class ArenaPlane : UdonSharpBehaviour
 
         Debug.Log($"Blocks {blocks}");
 
+        offsets = new int[heght * width];
+        int offset = 0; 
         vertices = new Vector3[blocks * 24];
         int verticesPtr = 0;
         triangles = new int[blocks * 36];
         int trisPtr = 0;
         var uv = new Vector2[blocks * 24];
         int uvPtr = 0;
+        var uvOffset = new Vector2(0f, 0.75f);
 
         for (int x = 0; x < width; x++)
         {
@@ -155,6 +158,8 @@ public class ArenaPlane : UdonSharpBehaviour
                 if (map[x * heght + y])
                 {
                     var pos = new Vector3(x, 0.0f, y);
+                    offsets[x * heght + y] = offset++;
+
                     for (int p = 0; p < 6; p++)
                     {
                         triangles[trisPtr++] = (verticesPtr);
@@ -167,6 +172,10 @@ public class ArenaPlane : UdonSharpBehaviour
                         vertices[verticesPtr++] = (pos + voxelVerts[voxelTris[p * 4 + 1]]);
                         vertices[verticesPtr++] = (pos + voxelVerts[voxelTris[p * 4 + 2]]);
                         vertices[verticesPtr++] = (pos + voxelVerts[voxelTris[p * 4 + 3]]);
+                        uv[uvPtr++] = voxelUvs[0] + uvOffset;
+                        uv[uvPtr++] = voxelUvs[1] + uvOffset;
+                        uv[uvPtr++] = voxelUvs[2] + uvOffset;
+                        uv[uvPtr++] = voxelUvs[3] + uvOffset;
                     }
                 }
             }
@@ -178,6 +187,7 @@ public class ArenaPlane : UdonSharpBehaviour
         mesh.Clear();
         mesh.vertices = vertices;
         mesh.triangles = triangles;
+        mesh.uv = uv;
         mesh.RecalculateNormals();
     }
 

@@ -10,10 +10,10 @@ public class ArenaManager : UdonSharpBehaviour
     public PlayerState localPlayerState;
 
     public ArenaPlane[] arenaPlanes;
+    public GameObject fallingCube;
     float[] layersHeight;
 
     CircularBufferVector3Int buffer;
-
 
     readonly Vector2[] playerBoundaries = new Vector2[] {
         new Vector2(-1f, -1f),
@@ -85,29 +85,31 @@ public class ArenaManager : UdonSharpBehaviour
                 }
             }
 
-            Debug.Log(buffer.GetLength());
-
             while (buffer.GetLength() > removeDelay)
             {
                 var pos = buffer.Peek();
                 var isDeleted = ProcessBlock(arenaPlanes[pos.y], new Vector2Int(pos.x, pos.z));
-                Debug.Log(isDeleted);
                 if (isDeleted )
                 {
-                    // Add
                     localPlayerState.Add(pos);
                 }
             }
 
-            // Send
             localPlayerState.SendIfNotEmpty();
         }
     }
 
     bool ProcessBlock(ArenaPlane plane, Vector2Int pos)
     {
-        // TODO: Анимация падения блока
-        return plane.RemoveBlock(pos);
+        var isBlockDeleted = plane.RemoveBlock(pos);
+
+        if (isBlockDeleted) {
+            var fallingCubeInstance = VRCInstantiate(fallingCube);
+            fallingCubeInstance.transform.position = plane.transform.TransformPoint(new Vector3(pos.x, 0, pos.y));
+            fallingCubeInstance.transform.SetParent(plane.transform);
+        }
+
+        return isBlockDeleted;
     }
 
     public void ApplyNetworkData(Vector3[] networkBufer, int networkBuferPtr) {
