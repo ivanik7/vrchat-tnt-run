@@ -1,9 +1,9 @@
-﻿
+
 using UdonSharp;
 using UnityEngine;
 using System.Collections;
 
-public class ArenaThing : UdonSharpBehaviour
+public class ArenaPlane : UdonSharpBehaviour
 {
     readonly Vector3[] voxelVerts = new Vector3[] {
 
@@ -51,6 +51,7 @@ public class ArenaThing : UdonSharpBehaviour
     Mesh mesh;
     Mesh collisionMesh;
     MeshCollider meshCollider; 
+    bool needMeshUpdate = false;
 
     void Start()
     {
@@ -63,7 +64,25 @@ public class ArenaThing : UdonSharpBehaviour
         collisionMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 
         meshCollider = GetComponent<MeshCollider>();
+    }
 
+    void FixedUpdate()
+    {
+        if (needMeshUpdate) {
+            needMeshUpdate = false;
+
+            float b = Time.realtimeSinceStartup;
+            mesh.triangles = triangles;
+            collisionMesh.triangles = trianglesCollision;
+            float c = Time.realtimeSinceStartup;
+            
+            meshCollider.sharedMesh = collisionMesh;
+
+            float d = Time.realtimeSinceStartup;
+        }
+    }
+
+    public void FillMap() {
         map = new bool[width * heght];
 
         bool last = false;
@@ -74,25 +93,26 @@ public class ArenaThing : UdonSharpBehaviour
             map[i] = true;
         }
 
-        if (arenaMask == null) {
-            Debug.Log("pizdec");
-        }
-
         GenerateMesh();
         GenerateCollisionMesh();
         float d = Time.realtimeSinceStartup;
 
         meshCollider.sharedMesh = collisionMesh;
         Debug.Log($"{Time.realtimeSinceStartup - d}");
-
     }
 
-    void FixedUpdate()
-    {
-        float a = Time.realtimeSinceStartup;
-        int x = Random.Range(0, width);
-        int y = Random.Range(0, heght);
+    public bool RemoveBlock(Vector2Int pos) {
+        int x = pos.x;
+        int y = pos.y;
         
+        if (!map[x * heght + y]) {
+            Debug.Log($"Block alredy removed");
+            
+            return false;
+        }
+
+        map[x * heght + y] = false;
+
         for (int i = 0; i < 36; i++)
         {
             triangles[(x * heght + y) * 36 + i] = 0;
@@ -103,20 +123,11 @@ public class ArenaThing : UdonSharpBehaviour
             trianglesCollision[(x * heght + y) * 6 + i] = 0;
         }
 
-        float b = Time.realtimeSinceStartup;
-        mesh.triangles = triangles;
-        collisionMesh.triangles = trianglesCollision;
-        float c = Time.realtimeSinceStartup;
-        
-        meshCollider.sharedMesh = collisionMesh;
+        needMeshUpdate = true;
 
-        float d = Time.realtimeSinceStartup;
+        Debug.Log($"Remove block");
 
-        Debug.Log($"{b-a}  {c-b}  {d-c}");
-                // float d = Time.realtimeSinceStartup;
-
-        // meshCollider.sharedMesh = collisionMesh;
-        // Debug.Log($"{Time.realtimeSinceStartup - d}");
+        return true;
     }
 
     void GenerateMesh()
@@ -134,6 +145,8 @@ public class ArenaThing : UdonSharpBehaviour
         int verticesPtr = 0;
         triangles = new int[blocks * 36];
         int trisPtr = 0;
+        var uv = new Vector2[blocks * 24];
+        int uvPtr = 0;
 
         for (int x = 0; x < width; x++)
         {
