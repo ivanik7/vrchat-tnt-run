@@ -11,6 +11,8 @@ public class ArenaManager : UdonSharpBehaviour
 
     public ArenaPlane[] arenaPlanes;
     public GameObject fallingCube;
+
+    public MapContainer mapContainer;
     float[] layersHeight;
 
     CircularBufferVector3Int buffer;
@@ -50,6 +52,7 @@ public class ArenaManager : UdonSharpBehaviour
     {
         foreach (var plane in arenaPlanes)
         {
+            plane.mapContainer = mapContainer; 
             plane.FillMap();
         }
 
