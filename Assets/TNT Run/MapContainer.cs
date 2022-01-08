@@ -53,7 +53,12 @@ public class MapContainerEditor : Editor
         new Vector2 (0.25f, 0.25f)
     };
 
-    [SerializeField]
+    Vector2[] uvOffset = new Vector2[] {
+        new Vector2(0f, 0.75f),
+        new Vector2(0.25f, 0.75f),
+        new Vector2(0.5f, 0.75f)
+    };
+
     public override void OnInspectorGUI()
     {
         // Draws the default convert to UdonBehaviour button, program asset field, sync settings, etc.
@@ -116,7 +121,6 @@ public class MapContainerEditor : Editor
 
         var uv = new Vector2[blocks * 24];
         int uvPtr = 0;
-        var uvOffset = new Vector2(0f, 0.75f);
 
         for (int x = 0; x < width; x++)
         {
@@ -139,11 +143,16 @@ public class MapContainerEditor : Editor
                         vertices[verticesPtr++] = (pos + voxelVerts[voxelTris[p * 4 + 2]]);
                         vertices[verticesPtr++] = (pos + voxelVerts[voxelTris[p * 4 + 3]]);
 
-                        // TODO: цвета блоков
-                        uv[uvPtr++] = voxelUvs[0] + uvOffset;
-                        uv[uvPtr++] = voxelUvs[1] + uvOffset;
-                        uv[uvPtr++] = voxelUvs[2] + uvOffset;
-                        uv[uvPtr++] = voxelUvs[3] + uvOffset;
+                        var pixel = pixels[x * height + y];
+                        Vector2 blockUvOffset;
+                        if (pixel.r > 0) blockUvOffset = uvOffset[0];
+                        else if (pixel.g > 0) blockUvOffset = uvOffset[1];
+                        else blockUvOffset = uvOffset[2];
+
+                        uv[uvPtr++] = voxelUvs[0] + blockUvOffset;
+                        uv[uvPtr++] = voxelUvs[1] + blockUvOffset;
+                        uv[uvPtr++] = voxelUvs[2] + blockUvOffset;
+                        uv[uvPtr++] = voxelUvs[3] + blockUvOffset;
                     }
                 }
             }
@@ -163,7 +172,6 @@ public class MapContainerEditor : Editor
 
         return mesh;
     }
-
 
     Mesh GenerateCollisionMesh(Color32[] pixels, int width, int height, int blocks)
     {
