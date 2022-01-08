@@ -56,14 +56,14 @@ public class MapContainerEditor : Editor
     };
 
     Vector2[] uvOffset = new Vector2[] {
-        new Vector2(0f, 0.75f),
-        new Vector2(0.25f, 0.75f),
-        new Vector2(0.5f, 0.75f)
+        new Vector2(0.0f, 0.75f),
+        new Vector2(0.75f, 0.75f),
+        new Vector2(0.0f, 0.0f),
+        new Vector2(0.5f, 0.25f)
     };
 
     public override void OnInspectorGUI()
     {
-        // Draws the default convert to UdonBehaviour button, program asset field, sync settings, etc.
         if (UdonSharpGUI.DrawDefaultUdonSharpBehaviourHeader(target)) return;
 
         MapContainer container = (MapContainer)target;

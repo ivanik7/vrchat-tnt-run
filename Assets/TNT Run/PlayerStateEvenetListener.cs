@@ -6,7 +6,7 @@ using VRC.SDKBase;
 using VRC.Udon;
 using Cyan.PlayerObjectPool;
 
-public class PlayerStateVenetListener : UdonSharpBehaviour
+public class PlayerStateEvenetListener : UdonSharpBehaviour
 {
     public ArenaManager arenaManager;
     public CyanPlayerObjectAssigner objectPool;
