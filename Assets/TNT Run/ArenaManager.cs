@@ -108,10 +108,11 @@ public class ArenaManager : UdonSharpBehaviour
     {
         var isBlockDeleted = plane.RemoveBlock(pos);
 
-        if (isBlockDeleted) {
+        if (isBlockDeleted && localPlayer.GetPosition().y > plane.transform.position.y) {
             var fallingCubeInstance = VRCInstantiate(fallingCube);
-            fallingCubeInstance.transform.position = plane.transform.TransformPoint(new Vector3(pos.x, 0, pos.y));
             fallingCubeInstance.transform.SetParent(plane.transform);
+            fallingCubeInstance.transform.position = plane.transform.TransformPoint(new Vector3(pos.x, 0, pos.y));
+            fallingCubeInstance.transform.localScale = new Vector3(1, 1, 1);
             fallingCubeInstance.GetComponentInChildren<MeshRenderer>().material = fallingCubeMaterials[ColorToTextureId(mapContainer.texture.GetPixel(pos.x, pos.y))];
         }
 
