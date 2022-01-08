@@ -18,6 +18,8 @@ public class MapContainer : UdonSharpBehaviour
     public int[] offsets;
     [HideInInspector]
     public bool[] map;
+
+
 }
 
 #if !COMPILER_UDONSHARP && UNITY_EDITOR
@@ -97,14 +99,13 @@ public class MapContainerEditor : Editor
         var offsets = new int[pixels.Length];
         int offset = 0;
 
-        for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
         {
-            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
             {
-                if (IsPixelSeted(pixels[x * height + y]))
+                if (IsPixelSeted(pixels[y * width + x]))
                 {
-                    var pos = new Vector3(x, 0.0f, y);
-                    offsets[x * height + y] = offset++;
+                    offsets[y * width + x] = offset++;
                 }
             }
         }
@@ -122,11 +123,11 @@ public class MapContainerEditor : Editor
         var uv = new Vector2[blocks * 24];
         int uvPtr = 0;
 
-        for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
         {
-            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
             {
-                if (IsPixelSeted(pixels[x * height + y]))
+                if (IsPixelSeted(pixels[y * width + x]))
                 {
                     var pos = new Vector3(x, 0.0f, y);
 
@@ -143,11 +144,7 @@ public class MapContainerEditor : Editor
                         vertices[verticesPtr++] = (pos + voxelVerts[voxelTris[p * 4 + 2]]);
                         vertices[verticesPtr++] = (pos + voxelVerts[voxelTris[p * 4 + 3]]);
 
-                        var pixel = pixels[x * height + y];
-                        Vector2 blockUvOffset;
-                        if (pixel.r > 0) blockUvOffset = uvOffset[0];
-                        else if (pixel.g > 0) blockUvOffset = uvOffset[1];
-                        else blockUvOffset = uvOffset[2];
+                        Vector2 blockUvOffset = uvOffset[ColorToTextureId(pixels[y * width + x])];
 
                         uv[uvPtr++] = voxelUvs[0] + blockUvOffset;
                         uv[uvPtr++] = voxelUvs[1] + blockUvOffset;
@@ -180,11 +177,11 @@ public class MapContainerEditor : Editor
         var triangles = new int[blocks * 6];
         int trisPtr = 0;
 
-        for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
         {
-            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
             {
-                if (IsPixelSeted(pixels[x * height + y]))
+                if (IsPixelSeted(pixels[y * width + x]))
                 {
                     var pos = new Vector3(x, 0.0f, y);
                     triangles[trisPtr++] = (verticesPtr);
@@ -217,6 +214,13 @@ public class MapContainerEditor : Editor
     bool IsPixelSeted(Color32 c)
     {
         return c.r > 0 || c.g > 0 || c.b > 0;
+    }
+
+    int ColorToTextureId(Color32 c)
+    {
+        if (c.r > 0) return 0;
+        if (c.g > 0) return 1;
+        return 2;
     }
 }
 #endif

@@ -74,13 +74,13 @@ public class ArenaPlane : UdonSharpBehaviour
         int x = pos.x;
         int y = pos.y;
 
-        if (x < 0 || x > width || y < 0 || y > height || !map[x * height + y]) {
+        if (x < 0 || x > width || y < 0 || y > height || !map[y * width + x]) {
             return false;
         }
 
-        map[x * height + y] = false;
+        map[y * width + x] = false;
 
-        int offset = offsets[x * height + y];
+        int offset = offsets[y * width + x];
         for (int i = 0; i < 36; i++)
         {
             drawTriangles[offset * 36 + i] = 0;

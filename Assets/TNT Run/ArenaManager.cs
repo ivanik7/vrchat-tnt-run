@@ -11,6 +11,7 @@ public class ArenaManager : UdonSharpBehaviour
 
     public ArenaPlane[] arenaPlanes;
     public GameObject fallingCube;
+    public Material[] fallingCubeMaterials;
 
     public MapContainer mapContainer;
     float[] layersHeight;
@@ -110,9 +111,17 @@ public class ArenaManager : UdonSharpBehaviour
             var fallingCubeInstance = VRCInstantiate(fallingCube);
             fallingCubeInstance.transform.position = plane.transform.TransformPoint(new Vector3(pos.x, 0, pos.y));
             fallingCubeInstance.transform.SetParent(plane.transform);
+            fallingCubeInstance.GetComponentInChildren<MeshRenderer>().material = fallingCubeMaterials[ColorToTextureId(mapContainer.texture.GetPixel(pos.x, pos.y))];
         }
 
         return isBlockDeleted;
+    }
+
+    int ColorToTextureId(Color c)
+    {
+        if (c.r > 0) return 0;
+        if (c.g > 0) return 1;
+        return 2;
     }
 
     public void ApplyNetworkData(Vector3[] networkBufer, int networkBuferPtr) {
