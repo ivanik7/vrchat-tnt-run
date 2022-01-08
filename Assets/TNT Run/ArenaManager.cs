@@ -77,25 +77,26 @@ public class ArenaManager : UdonSharpBehaviour
                         foreach (var bound in playerBoundaries)
                         {
                             var blockPos = new Vector3Int(Mathf.FloorToInt(pos.x + bound.x * playerSize), i, Mathf.FloorToInt(pos.z + bound.y * playerSize));
-                            if (lastBlock != blockPos)
-                            {
-                                lastBlock = blockPos;
-                                buffer.Add(blockPos);
-                            }
+                            lastBlock = blockPos;
+                            buffer.Add(blockPos);
                         }
 
                         break;
                     }
                 }
+            } else {
+                buffer.Add(new Vector3Int(0, -1, 0));
             }
 
             while (buffer.GetLength() > removeDelay)
             {
                 var pos = buffer.Peek();
-                var isDeleted = ProcessBlock(arenaPlanes[pos.y], new Vector2Int(pos.x, pos.z));
-                if (isDeleted )
-                {
-                    localPlayerState.Add(pos);
+                if (pos.y != -1) {
+                    var isDeleted = ProcessBlock(arenaPlanes[pos.y], new Vector2Int(pos.x, pos.z));
+                    if (isDeleted )
+                    {
+                        localPlayerState.Add(pos);
+                    }
                 }
             }
 
