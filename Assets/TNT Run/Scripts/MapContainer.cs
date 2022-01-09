@@ -158,8 +158,8 @@ public class MapContainerEditor : Editor
             }
         }
 
-        Debug.Log($"Tris {trisPtr}/{triangles.Length}");
-        Debug.Log($"Vertices {verticesPtr}/{vertices.Length}");
+        Debug.Log($"Display tris {trisPtr}/{triangles.Length}");
+        Debug.Log($"Display vertices {verticesPtr}/{vertices.Length}");
 
         var mesh = new Mesh();
 
@@ -201,8 +201,8 @@ public class MapContainerEditor : Editor
             }
         }
 
-        Debug.Log($"Tris {trisPtr}/{triangles.Length}");
-        Debug.Log($"Vertices {verticesPtr}/{vertices.Length}");
+        Debug.Log($"Collision tris {trisPtr}/{triangles.Length}");
+        Debug.Log($"Collision vertices {verticesPtr}/{vertices.Length}");
 
         var mesh = new Mesh();
 

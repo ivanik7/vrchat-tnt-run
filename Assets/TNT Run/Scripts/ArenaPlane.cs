@@ -73,7 +73,7 @@ public class ArenaPlane : UdonSharpBehaviour
 
         meshCollider.sharedMesh = collisionMesh;
 
-        Debug.Log($"{Time.realtimeSinceStartup - d}");
+        Debug.Log($"FillMap {Time.realtimeSinceStartup - d}s");
     }
 
     public bool RemoveBlock(Vector2Int pos)

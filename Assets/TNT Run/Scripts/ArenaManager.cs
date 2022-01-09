@@ -27,7 +27,7 @@ public class ArenaManager : UdonSharpBehaviour
 
     public float playerSize = 0.1f;
     public int removeDelay = 18;
-    bool gameStarted = false;
+    public bool gameStarted = false;
     void Start()
     {
         buffer = GetComponent<CircularBufferVector3Int>();

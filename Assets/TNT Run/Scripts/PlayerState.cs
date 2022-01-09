@@ -46,7 +46,7 @@ public class PlayerState : UdonSharpBehaviour
 
     public override void OnPostSerialization (VRC.Udon.Common.SerializationResult result) {
         if (!result.success) {
-            Debug.Log("Serialization failed");
+            Debug.Log("Player state serialization failed");
         }
 
         Reset();
