@@ -10,6 +10,7 @@ public class GameManager : UdonSharpBehaviour
     public const int LOBBY = 0;
     public const int WAIT = 1;
     public const int STARTED = 2;
+    public Transform lobbySpawn;
     public ArenaManager arenaManager;
     public MapContainer[] mapContainers;
     public StartTimer startTimer;
@@ -20,6 +21,15 @@ public class GameManager : UdonSharpBehaviour
     [UdonSynced]
     public double gameStartedAt = 0;
     public double lastTimerDisplay = 0;
+    [UdonSynced]
+    public int playersIngame = 0;
+    [UdonSynced]
+    public int playersFailed = 0;
+
+    VRCPlayerApi localPlayer;
+    void Start() {
+        localPlayer = Networking.LocalPlayer;
+    }
     
     void FixedUpdate () {
         if (Networking.IsOwner(gameObject)) {
@@ -32,6 +42,11 @@ public class GameManager : UdonSharpBehaviour
                 SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "StartGame");
             }
         }
+
+        if (localPlayer.GetPosition().y < -10f) {
+            localPlayer.TeleportTo(lobbySpawn.position, lobbySpawn.rotation);
+            SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Owner, "PlayerFailed");
+        }
     }
 
     public void UpdateValues() {
@@ -40,18 +55,18 @@ public class GameManager : UdonSharpBehaviour
 
     public void StartButton() {
         
-        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.Owner, "PrepareGame");
+        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "PrepareGame");
     }
 
     public void PrepareGame () {
-        gameState = WAIT;
-        gameStartedAt = Networking.GetServerTimeInSeconds();
-        UpdateValues();
+        if (Networking.IsOwner(gameObject)) {
+            gameState = WAIT;
+            gameStartedAt = Networking.GetServerTimeInSeconds();
+            playersIngame = VRCPlayerApi.GetPlayerCount();
 
-        SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "PrepareArena");
-    }
+            UpdateValues();
+        }
 
-    public void PrepareArena () {
         GetSelectedMapContainer().arena.SetActive(true);
 
         arenaManager.mapContainer = GetSelectedMapContainer();
@@ -64,10 +79,20 @@ public class GameManager : UdonSharpBehaviour
     public void StartGame () {
         if (Networking.IsOwner(gameObject)) {
             gameState = STARTED;
+            UpdateValues();
         }
 
         arenaManager.gameStarted = true;
-        // TODO: Останавливать игру при телепорте на спавн
+    }
+
+    public void EndGame() {
+        if (Networking.IsOwner(gameObject)) {
+            gameState = LOBBY;
+            
+            UpdateValues();
+        }
+
+        arenaManager.gameStarted = false;
     }
 
     public void DisplayTimer() {
@@ -75,6 +100,16 @@ public class GameManager : UdonSharpBehaviour
 
         Debug.Log($"Timer {timeToDisplay}");
         startTimer.Display(6 + timeToDisplay);
+    }
+
+    public void PlayerFailed() {
+        playersFailed++;
+
+        if (playersFailed >= playersIngame) {
+           SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, "EndGame");
+        } else {
+            UpdateValues();
+        }
     }
 
     MapContainer GetSelectedMapContainer() {
